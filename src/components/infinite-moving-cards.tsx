@@ -10,11 +10,7 @@ export const InfiniteMovingCards = ({
   pauseOnHover = true,
   className,
 }: {
-  items: {
-    quote: string;
-    name: string;
-    title: string;
-  }[];
+  items: { quote: string; name: string; title: string }[];
   direction?: "left" | "right";
   speed?: "fast" | "normal" | "slow";
   pauseOnHover?: boolean;
@@ -23,99 +19,107 @@ export const InfiniteMovingCards = ({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLUListElement>(null);
 
-  useEffect(() => {
-    addAnimation();
-  }, []);
   const [start, setStart] = useState(false);
-  function addAnimation() {
-    if (containerRef.current && scrollerRef.current) {
-      const scrollerContent = Array.from(scrollerRef.current.children);
 
-      scrollerContent.forEach((item) => {
-        const duplicatedItem = item.cloneNode(true);
-        if (scrollerRef.current) {
-          scrollerRef.current.appendChild(duplicatedItem);
-        }
+  useEffect(() => {
+    setupAnimation();
+  }, []);
+
+  function setupAnimation() {
+    if (containerRef.current && scrollerRef.current) {
+      const itemsArray = Array.from(scrollerRef.current.children);
+
+      // Duplicate items for perfect infinite scrolling
+      itemsArray.forEach((item) => {
+        const clone = item.cloneNode(true);
+        scrollerRef.current?.appendChild(clone);
       });
 
-      getDirection();
-      getSpeed();
+      applyDirection();
+      applySpeed();
       setStart(true);
     }
   }
-  const getDirection = () => {
-    if (containerRef.current) {
-      if (direction === "left") {
-        containerRef.current.style.setProperty(
-          "--animation-direction",
-          "forwards"
-        );
-      } else {
-        containerRef.current.style.setProperty(
-          "--animation-direction",
-          "reverse"
-        );
-      }
-    }
+
+  const applyDirection = () => {
+    containerRef.current?.style.setProperty(
+      "--animation-direction",
+      direction === "left" ? "forwards" : "reverse"
+    );
   };
-  const getSpeed = () => {
-    if (containerRef.current) {
-      if (speed === "fast") {
-        containerRef.current.style.setProperty("--animation-duration", "20s");
-      } else if (speed === "normal") {
-        containerRef.current.style.setProperty("--animation-duration", "40s");
-      } else {
-        containerRef.current.style.setProperty("--animation-duration", "80s");
-      }
-    }
+
+  const applySpeed = () => {
+    let duration = "40s";
+    if (speed === "fast") duration = "20s";
+    if (speed === "slow") duration = "80s";
+
+    containerRef.current?.style.setProperty("--animation-duration", duration);
   };
+
   return (
     <div
       ref={containerRef}
       className={cn(
-        "scroller relative z-20  max-w-7xl overflow-hidden  [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]",
+        "scroller relative z-20 max-w-7xl mx-auto overflow-hidden py-10",
+        // MASK FOR BOTH MODES
+        "light:[mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]",
+        "dark:[mask-image:linear-gradient(to_right,transparent,white_15%,white_85%,transparent)]",
         className
       )}
     >
-      <div className="flex justify-center items-center py-5  text-3xl">
+      {/* Heading */}
+      <div className="flex justify-center items-center py-6 text-3xl font-semibold text-black dark:text-white">
         Learner Experiences 👨‍🎓
       </div>
+
       <ul
         ref={scrollerRef}
         className={cn(
-          " flex min-w-full shrink-0 gap-4 py-4 w-max flex-nowrap",
-          start && "animate-scroll ",
+          "flex w-max flex-nowrap gap-6 py-6 transition-all",
+          start && "animate-scroll",
           pauseOnHover && "hover:[animation-play-state:paused]"
         )}
       >
         {items.map((item, idx) => (
           <li
-            className="w-[350px] max-w-full relative rounded-2xl border border-b-0 flex-shrink-0 border-slate-700 px-8 py-6 md:w-[450px]"
-            style={{
-              background:
-                "linear-gradient(180deg, var(--slate-800), var(--slate-900)",
-            }}
             key={idx}
+            className={cn(
+              "relative flex-shrink-0 w-[350px] md:w-[420px] p-6 rounded-3xl group",
+              // ---- LIGHT MODE CARD ----
+              "bg-white/70 border border-black/10 text-black shadow-[0_8px_25px_rgba(0,0,0,0.07)] backdrop-blur-xl",
+              // ---- DARK MODE CARD ----
+              "dark:bg-white/10 dark:border-white/10 dark:text-gray-100 dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)]",
+
+              "hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300"
+            )}
           >
             <blockquote>
-              <div
-                aria-hidden="true"
-                className="user-select-none -z-1 pointer-events-none absolute -left-0.5 -top-0.5 h-[calc(100%_+_4px)] w-[calc(100%_+_4px)]"
-              ></div>
-              <span className=" relative z-20 text-sm leading-[1.6] text-gray-100 font-normal">
-                {item.quote}
-              </span>
-              <div className="relative z-20 mt-6 flex flex-row items-center">
-                <span className="flex flex-col gap-1">
-                  <span className=" text-sm leading-[1.6] text-gray-400 font-normal">
-                    {item.name}
-                  </span>
-                  <span className=" text-sm leading-[1.6] text-gray-400 font-normal">
-                    {item.title}
-                  </span>
-                </span>
+              <p className="text-[15px] leading-relaxed font-normal text-black/80 dark:text-gray-200">
+                “{item.quote}”
+              </p>
+
+              <div className="mt-6">
+                <p className="text-sm font-semibold text-black/80 dark:text-gray-300">
+                  {item.name}
+                </p>
+                <p className="text-xs text-black/60 dark:text-gray-400">
+                  {item.title}
+                </p>
               </div>
             </blockquote>
+
+            {/* Glow Layer */}
+            <div
+              className={cn(
+                "absolute inset-0 rounded-3xl blur-xl opacity-0 group-hover:opacity-30 transition duration-300 -z-10",
+
+                // LIGHT MODE Glow
+                "bg-gradient-to-br from-blue-400/20 to-purple-500/20",
+
+                // DARK MODE Glow (brighter & cooler)
+                "dark:from-blue-500/30 dark:to-purple-600/30"
+              )}
+            />
           </li>
         ))}
       </ul>

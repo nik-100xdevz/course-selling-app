@@ -1,107 +1,126 @@
-# Developer Documentation
+# Technical Architecture & Implementation Details
 
-This guide provides a comprehensive technical overview of the Course Selling Website. It is designed to help developers understand the architecture, setup the environment, and contribute to the project.
+This document provides a comprehensive, deep-dive analysis of every page in the "Course's Academy" application. It details the technologies used, implementation logic, key functions, and component hierarchy for each route.
 
-## 1. Getting Started
+---
 
-### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB (Local or Atlas)
-
-### Installation
-1. Clone the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Configuration
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Database Connection
-MONGODB_URI=mongodb://localhost:27017/course-selling-app # or your Atlas URI
-
-# NextAuth Configuration
-NEXTAUTH_SECRET=your_super_secret_key # Generate using `openssl rand -base64 32`
-NEXTAUTH_URL=http://localhost:3000 # For local development
-```
-
-### Running the App
-- **Development**: `npm run dev`
-- **Production Build**: `npm run build`
-- **Start Production**: `npm run start`
-
-## 2. Architecture Overview
-
-The application is built using the **Next.js App Router** architecture, leveraging Server Components for performance and Client Components for interactivity.
-
-- **Frontend**: React, Tailwind CSS, Shadcn UI.
-- **Backend**: Next.js API Routes (`src/app/api`).
-- **Database**: MongoDB with Mongoose ODM.
+## 1. Global Architecture
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS with a custom "Luminous Forge" design system (Deep Navy/Amber/Coral).
+- **State Management**: React Hooks (`useState`, `useEffect`) and URL search params.
 - **Authentication**: NextAuth.js (Credentials Provider).
+- **Database**: MongoDB with Mongoose.
 
-## 3. Database Schema
+---
 
-The application uses three primary data models defined in `src/models`.
+## 2. Page-by-Page Analysis
 
-### User (`User.ts`)
-Represents a registered user (student or admin).
-- **Fields**:
-  - `name`, `email`, `password`: Basic auth details.
-  - `role`: `'student'` or `'admin'`.
-  - `wishlist`: Array of `Course` ObjectIds.
-  - `purchasedCourses`: Array of `Course` ObjectIds.
-  - `purchaseHistory`: Array of `PurchaseHistory` ObjectIds.
-  - `learningPoints`: Gamification metric (default 0).
+### A. Home Page (`src/app/page.tsx`)
+**Route**: `/`
+- **Purpose**: Landing page to attract users, showcase skills, testimonials, and featured courses.
+- **Implementation**: Client Component (`"use client"`).
+- **Key Components**:
+  1.  **`LampComponent`** (`src/components/ui/lamp.tsx`):
+      -   **Tech**: Framer Motion, Tailwind.
+      -   **Function**: Creates the "Luminous Forge" hero section with a warm amber spotlight animation.
+      -   **Logic**: Uses `motion.div` for initial ease-in-out animation of the lamp glow.
+  2.  **`HoverEffect`** (`src/components/Card-hover-effect.tsx`):
+      -   **Tech**: Framer Motion (`AnimatePresence`).
+      -   **Function**: Displays a grid of skills.
+      -   **Logic**: Tracks `hoveredIndex` state to render a moving gradient background behind the hovered card.
+  3.  **`InfiniteMovingCards`** (`src/components/infinite-moving-cards.tsx`):
+      -   **Tech**: CSS Animations (`@keyframes`), React Refs.
+      -   **Function**: Auto-scrolling testimonials.
+      -   **Logic**: Duplicates the list of items to create a seamless infinite loop effect.
+  4.  **`AccordionComponent`** (`src/components/AccordionComponent.tsx`):
+      -   **Tech**: Radix UI Accordion.
+      -   **Function**: FAQ section.
 
-### Course (`Course.ts`)
-Represents a course available for purchase.
-- **Fields**:
-  - `title`, `description`, `price`, `thumbnail`: Display info.
-  - `instructor`: Name of the instructor.
-  - `creator`: ObjectId of the Admin `User` who created it.
-  - `studentsEnrolledCount`: Counter for popularity.
-  - `purchasedUsers`: Array of `User` ObjectIds who bought it.
+### B. Courses Listing (`src/app/courses/page.tsx`)
+**Route**: `/courses`
+- **Purpose**: Browse all available courses.
+- **Implementation**: Server Component (wrapper) -> Client Component (`CourseHomePage`).
+- **Key Components**:
+  1.  **`BackgroundBoxes`** (`src/components/Background-boxdemo.tsx`):
+      -   **Tech**: Framer Motion.
+      -   **Function**: Interactive background where boxes highlight on hover.
+  2.  **`CourseHomePage`** (`src/components/CourseHomePage.tsx`):
+      -   **Tech**: Axios, React Hooks.
+      -   **Function**: Fetches and displays courses.
+      -   **Logic**:
+          -   `useEffect`: Calls `GET /api/all-courses` on mount.
+          -   `useState`: Manages `courses` array and `isLoading` state.
+          -   **Rendering**: Maps over `courses` to render `CourseCard`.
+  3.  **`CourseCard`** (`src/components/CourseCard.tsx`):
+      -   **Tech**: Next.js `Image`, Framer Motion.
+      -   **Function**: Displays individual course info (thumbnail, title, price).
+      -   **Logic**: "Glass-Steel" design with `group-hover` effects for lift and inner glow.
 
-### PurchaseHistory (`PurchaseHistory.ts`)
-Records a transaction.
-- **Fields**:
-  - `user`: ObjectId of the buyer.
-  - `course`: ObjectId of the course.
-  - `price`: Amount paid.
-  - `transactionId`: Unique identifier for the payment.
-  - `status`: `'completed'`, `'pending'`, or `'failed'`.
+### C. Admin Dashboard (`src/app/admin/page.tsx`)
+**Route**: `/admin`
+- **Purpose**: Overview of system performance for administrators.
+- **Implementation**: Client Component.
+- **Key Components**:
+  1.  **`AdminLayout`** (`src/app/admin/layout.tsx`):
+      -   **Tech**: Next.js Layouts.
+      -   **Function**: Provides the persistent sidebar navigation.
+  2.  **Stats Cards**:
+      -   **Tech**: Framer Motion (staggered entry).
+      -   **Function**: Shows Revenue, Users, etc.
+  3.  **Recent Activity Table**:
+      -   **Tech**: Standard HTML Table with Tailwind styling.
+      -   **Function**: Lists recent enrollments.
 
-## 4. API & Authentication
+### D. Add Course (`src/app/add-course/page.tsx`)
+**Route**: `/add-course`
+- **Purpose**: Form for admins to create new courses.
+- **Implementation**: Server Component (for protection) -> Client Component (`AddCourseForm`).
+- **Security**:
+    -   **Server-Side**: Checks `session.user.role === 'admin'`. Redirects if false.
+- **Key Components**:
+  1.  **`AddCourseForm`** (`src/components/AddCourseForm.tsx`):
+      -   **Tech**: React Hook Form, Zod, Shadcn UI (`Form`, `Input`, `Select`).
+      -   **Function**: Collects course data and submits to API.
+      -   **Logic**:
+          -   Uses `zodResolver` to validate input against `CourseSchema`.
+          -   `onSubmit`: Sends POST request to `/api/add-course`.
+          -   Handles loading state and toast notifications.
 
-### Authentication Flow
-1. **Sign Up**: `POST /api/signup` creates a new user.
-2. **Sign In**: Handled by NextAuth (`/api/auth/[...nextauth]`). Uses `CredentialsProvider` to validate email/password against the MongoDB `User` collection.
-3. **Session**: JWT-based sessions. The `session` object is customized to include `id`, `role`, and `email`.
+### E. Authentication Pages
+**Routes**: `/sign-in`, `/sign-up`
+- **Purpose**: User registration and login.
+- **Implementation**: Client Components.
+- **Key Components**:
+  -   **`SignIn`** / **`SignUp`** components.
+  -   **Logic**:
+      -   **Sign Up**: POST to `/api/sign-up` to create a user in MongoDB.
+      -   **Sign In**: Calls `signIn("credentials")` from `next-auth/react`.
 
-### Key API Endpoints
-- **Courses**:
-  - `GET /api/all-courses`: Fetch all courses.
-  - `POST /api/add-course`: Create a new course (Admin only).
-  - `GET /api/course-info`: Get details for a specific course.
-- **User Actions**:
-  - `POST /api/purchase-course`: Handle course purchase.
-  - `POST /api/wishlist`: Add/remove from wishlist.
-  - `GET /api/get-purchased-courses`: List user's courses.
-  - `PUT /api/user/update-profile`: Update user details.
+### F. API Routes (`src/app/api/...`)
+-   **`/api/add-course`**:
+    -   **Method**: POST.
+    -   **Logic**: Verifies Admin role -> Validates Zod schema -> Creates `Course` document.
+-   **`/api/all-courses`**:
+    -   **Method**: GET.
+    -   **Logic**: Connects DB -> Fetches all courses -> Returns JSON.
+-   **`/api/auth/[...nextauth]`**:
+    -   **Logic**: Configures NextAuth with `CredentialsProvider`, `callbacks` for JWT and Session customization.
 
-## 5. Directory Structure Key
-- `src/app/(auth)`: Authentication pages (grouped to share layout/middleware logic if needed).
-- `src/components/ui`: Reusable UI components (buttons, inputs) from Shadcn UI.
-- `src/lib`:
-  - `dbConnect.ts`: Singleton pattern for MongoDB connection to prevent multiple connections in serverless environment.
-  - `auth.ts`: NextAuth configuration and callbacks.
+---
 
-## 6. Common Workflows
+## 3. Key Reusable Components
+-   **`Appbar`** (`src/components/Appbar.tsx`):
+    -   **Features**: Sticky positioning, glassmorphism, conditional rendering (Login/Logout/Avatar).
+    -   **Logic**: Checks `useSession()` to determine if user is logged in.
+-   **`Footer`** (`src/components/Footer.tsx`):
+    -   **Features**: Static links, branding, copyright info.
 
-### Adding a New Feature
-1. **Model**: If data changes, update `src/models`.
-2. **API**: Create a new route in `src/app/api/your-feature/route.ts`.
-3. **UI**: Create components in `src/components` and a page in `src/app`.
-4. **Validation**: Use Zod schemas in `src/schemas` to validate input.
+## 4. Design System ("Luminous Forge")
+-   **Colors**: Defined in `globals.css` (CSS Variables).
+    -   `--background`: Deep Navy.
+    -   `--primary`: Amber (Glow).
+    -   `--accent`: Coral (Heat).
+-   **Typography**: `Outfit` (Headings) and `Inter` (Body).
+-   **Effects**:
+    -   `.glass-card`: Backdrop blur + border.
+    -   `.text-heat`: Gradient text.

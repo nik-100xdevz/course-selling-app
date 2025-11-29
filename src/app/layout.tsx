@@ -9,9 +9,9 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "CourseForge - Empower Your Learning Journey",
+  title: "Course's Academy - Empower Your Learning Journey",
   description:
-    " Start your learning journey today with CourseForge and unlock the potential of knowledge at your fingertips.",
+    " Start your learning journey today with Course's Academy and unlock the potential of knowledge at your fingertips.",
 };
 
 export default function RootLayout({

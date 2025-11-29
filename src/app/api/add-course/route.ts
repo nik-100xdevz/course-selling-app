@@ -23,10 +23,10 @@ export async function POST(req: NextRequest) {
 
     const user = await User.findById(session.user.id);
 
-    if (!user) {
+    if (!user || user.role !== "admin") {
       return NextResponse.json(
         {
-          message: "User not found",
+          message: "Unauthorized: Only admins can create courses",
         },
         { status: 403 }
       );

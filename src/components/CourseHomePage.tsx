@@ -49,12 +49,12 @@ export default function CourseHomePage() {
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="p-6 border-t-2 border-black">
-        <h1 className="my-4 font-bold text-2xl">Courses to get you started</h1>
-        <div className="container mx-auto p-10">
+    <div className="flex flex-col bg-background min-h-screen">
+      <div className="p-6 border-t border-white/10">
+        <h1 className="my-4 font-bold text-3xl font-['Outfit'] text-foreground">Courses to get you started</h1>
+        <div className="container mx-auto p-4 md:p-10">
           {courses && courses.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {courses.map((course: CourseType) => (
                 <CourseCard
                   key={course._id}
@@ -70,23 +70,23 @@ export default function CourseHomePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-4 text-gray-700 dark:text-gray-300">
+            <div className="text-center py-20">
+              <h2 className="text-2xl font-bold mb-4 text-muted-foreground">
                 No Courses Added Here Yet
               </h2>
             </div>
           )}
         </div>
       </div>
-      <div className="p-6">
-        <h1 className="my-4 font-bold text-2xl">Featured Courses</h1>
-        <div className="flex justify-center items-center">
+      <div className="p-6 border-t border-white/10">
+        <h1 className="my-4 font-bold text-3xl font-['Outfit'] text-foreground">Featured Courses</h1>
+        <div className="flex justify-center items-center py-8">
           <CarouselPlugin />
         </div>
       </div>
-      <div className="p-4">
-        <h1 className="my-4  font-bold text-2xl">Categories</h1>
-        <div className="grid grid-cols-2 p-7 gap-10 my-4">
+      <div className="p-6 border-t border-white/10">
+        <h1 className="my-4 font-bold text-3xl font-['Outfit'] text-foreground">Categories</h1>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 my-4">
           {CATEGORIES.map((category) => (
             <CategoryCard
               key={category.name}

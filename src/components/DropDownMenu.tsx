@@ -116,7 +116,7 @@ export function AppMenu() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <Link href={"https://github.com/pruthviraj7714/course-selling-website"}>
+        <Link href={"https://github.com/nik-100xdevz/course-selling-app.git"}>
           <DropdownMenuItem>
             <Github className="mr-2 h-4 w-4" />
             <span>GitHub</span>

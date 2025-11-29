@@ -9,47 +9,46 @@ export const HoverEffect = ({
   items,
   className,
 }: {
-  items: {
-    title: string;
-    description: string;
-    link: string;
-  }[];
+  items: { title: string; description: string; link: string }[];
   className?: string;
 }) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div
       className={cn(
-        "grid bg-black max-w-5xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-10",
+        "grid max-w-6xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-10",
         className
       )}
     >
       {items.map((item, idx) => (
         <Link
-          href={item?.link}
+          href={item.link}
           key={idx}
-          className="relative group  block p-2 h-full w-full"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
+          className="relative group block h-full w-full"
         >
           <AnimatePresence>
             {hoveredIndex === idx && (
-              <motion.span
-                className="absolute inset-0 h-full w-full bg-slate-400 block rounded-3xl"
+              <motion.div
                 layoutId="hoverBackground"
-                initial={{ opacity: 0 }}
+                className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/20 via-slate-300/30 to-white/10 dark:from-white/10 dark:to-white/5 backdrop-blur-xl shadow-xl"
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{
                   opacity: 1,
-                  transition: { duration: 0.15 },
+                  scale: 1,
+                  transition: { duration: 0.25, ease: "easeOut" },
                 }}
                 exit={{
                   opacity: 0,
-                  transition: { duration: 0.15, delay: 0.2 },
+                  scale: 0.97,
+                  transition: { duration: 0.2, ease: "easeInOut" },
                 }}
               />
             )}
           </AnimatePresence>
+
           <Card>
             <CardTitle>{item.title}</CardTitle>
             <CardDescription>{item.description}</CardDescription>
@@ -68,18 +67,25 @@ export const Card = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div
+    <motion.div
+      whileHover={{
+        y: -6,
+        scale: 1.02,
+        transition: { duration: 0.25, ease: "easeOut" },
+      }}
       className={cn(
-        "rounded-2xl h-full w-full p-4 overflow-hidden bg-white border border-transparent dark:border-white/[0.2] group-hover:border-slate-200 relative z-20",
+        "rounded-3xl relative z-10 p-6 bg-white dark:bg-neutral-900 dark:border-neutral-800 border border-transparent shadow-md hover:shadow-2xl transition-all duration-300",
         className
       )}
     >
-      <div className="relative z-50">
-        <div className="p-4">{children}</div>
-      </div>
-    </div>
+      <div className="relative z-20">{children}</div>
+
+      {/* Glow Effect */}
+      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-40 transition duration-300 bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-2xl -z-10" />
+    </motion.div>
   );
 };
+
 export const CardTitle = ({
   className,
   children,
@@ -88,11 +94,17 @@ export const CardTitle = ({
   children: React.ReactNode;
 }) => {
   return (
-    <h4 className={cn("text-black font-bold tracking-wide mt-4", className)}>
+    <h4
+      className={cn(
+        "text-xl font-semibold tracking-wide text-black dark:text-white",
+        className
+      )}
+    >
       {children}
     </h4>
   );
 };
+
 export const CardDescription = ({
   className,
   children,
@@ -103,7 +115,7 @@ export const CardDescription = ({
   return (
     <p
       className={cn(
-        "mt-8 text-black tracking-wide leading-relaxed text-sm",
+        "mt-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300",
         className
       )}
     >
